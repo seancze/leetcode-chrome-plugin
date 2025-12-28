@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "LeetCode English to Code",
+  "version": "1.0",
+  "description": "Solve LeetCode problems by writing solutions in English.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["https://leetcode.com/*", "https://api.openai.com/*"],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["src/content.js"],
+      "css": ["src/styles.css"]
+    }
+  ],
+  "options_page": "src/options.html",
+  "action": {
+    "default_popup": "src/options.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["src/injected.js"],
+      "matches": ["https://leetcode.com/*"]
+    }
+  ]
+}
