@@ -15,13 +15,7 @@ async function handleGenerateCode(request, sendResponse) {
       return;
     }
 
-    const {
-      problemTitle,
-      problemDescription,
-      currentCode,
-      chatHistory,
-      userPrompt,
-    } = request.data;
+    const { currentCode, chatHistory, userPrompt } = request.data;
 
     const systemPrompt = `You are an expert Python programmer. Your goal is to convert English instructions into valid Python 3 code.
 If the user provides existing code, you should update it according to their instructions.

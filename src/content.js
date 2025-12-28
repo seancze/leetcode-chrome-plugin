@@ -154,23 +154,13 @@ async function handleGenerate() {
   status.className = "letc-status";
 
   try {
-    // 1. Get Problem Details
-    const problemDetails = getProblemDetails();
-    if (!problemDetails.title) {
-      throw new Error(
-        "Could not find problem details. Please ensure you are on a problem page."
-      );
-    }
-
-    // 2. Get Current Code
+    // Get Current Code
     const currentCode = await getCurrentCode();
 
-    // 3. Send to Background
+    // Send to Background
     const response = await chrome.runtime.sendMessage({
       action: "generateCode",
       data: {
-        problemTitle: problemDetails.title,
-        problemDescription: problemDetails.description,
         currentCode: currentCode,
         chatHistory: chatHistory,
         userPrompt: userPrompt,
@@ -181,12 +171,9 @@ async function handleGenerate() {
       throw new Error(response.error);
     }
 
-    // 4. Update Chat History
+    // Update Chat History
     chatHistory.push({ role: "user", content: userPrompt });
-    chatHistory.push({ role: "assistant", content: response.code }); // Store code as assistant response? Or maybe a summary?
-    // Actually, for the prompt context, we want the code. But for display, maybe just "Code Generated".
-    // Let's store the code in history for context, but maybe display it differently.
-    // For now, simple text.
+    chatHistory.push({ role: "assistant", content: response.code });
 
     saveHistory();
     renderHistory();
