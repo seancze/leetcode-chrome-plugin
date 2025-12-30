@@ -40,51 +40,21 @@ Violation of any rule above is an error.`;
 
   messages.push({ role: "user", content: userPrompt });
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: model,
-      input: messages,
-    }),
-  });
+  const { generatedOutput, usage } = await fetchOpenAIResponse(
+    apiKey,
+    model,
+    messages
+  );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error?.message || "OpenAI API request failed");
-  }
-
-  const data = await response.json();
-
-  let generatedCode = "";
-  if (data.output) {
-    for (const item of data.output) {
-      if (item.type === "message" && item.role === "assistant") {
-        for (const contentItem of item.content) {
-          if (contentItem.type === "output_text") {
-            generatedCode += contentItem.text;
-          }
-        }
-      }
-    }
-  }
-
-  if (!generatedCode) {
-    throw new Error("No generated code found in response");
-  }
-
-  // Clean up the code (remove markdown code blocks if present)
-  const cleanCode = generatedCode
+  // remove markdown code blocks if present
+  const cleanCode = generatedOutput
     .replace(/^```python\n/, "")
     .replace(/^```\n/, "")
     .replace(/\n```$/, "");
 
   return {
     code: cleanCode,
-    usage: data.usage,
+    usage: usage,
   };
 }
 
@@ -113,6 +83,21 @@ Rules:
     },
   ];
 
+  const { generatedOutput, usage } = await fetchOpenAIResponse(
+    apiKey,
+    model,
+    messages
+  );
+
+  const cleanTest = generatedOutput.trim();
+
+  return {
+    testCase: cleanTest,
+    usage: usage,
+  };
+}
+
+async function fetchOpenAIResponse(apiKey, model, messages) {
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -132,28 +117,22 @@ Rules:
 
   const data = await response.json();
 
-  let generatedTest = "";
+  let generatedOutput = "";
   if (data.output) {
     for (const item of data.output) {
       if (item.type === "message" && item.role === "assistant") {
         for (const contentItem of item.content) {
           if (contentItem.type === "output_text") {
-            generatedTest += contentItem.text;
+            generatedOutput += contentItem.text;
           }
         }
       }
     }
   }
 
-  if (!generatedTest) {
+  if (!generatedOutput) {
     throw new Error("No generated test case found in response");
   }
 
-  // Clean up
-  const cleanTest = generatedTest.trim();
-
-  return {
-    testCase: cleanTest,
-    usage: data.usage,
-  };
+  return { generatedOutput, usage: data.usage };
 }
