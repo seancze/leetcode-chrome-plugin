@@ -19,6 +19,30 @@ window.addEventListener("message", (event) => {
       "*"
     );
   }
+
+  if (event.data.type === "LEETCODE_EXTENSION_GET_TEST_CASES") {
+    getTestCases().then((testCases) => {
+      window.postMessage(
+        {
+          type: "LEETCODE_EXTENSION_TEST_CASES_RESPONSE",
+          testCases: testCases,
+        },
+        "*"
+      );
+    });
+  }
+
+  if (event.data.type === "LEETCODE_EXTENSION_APPEND_TEST_CASE") {
+    appendTestCase(event.data.testCase).then((success) => {
+      window.postMessage(
+        {
+          type: "LEETCODE_EXTENSION_APPEND_TEST_CASE_RESPONSE",
+          success: success,
+        },
+        "*"
+      );
+    });
+  }
 });
 
 function getCode() {
@@ -129,4 +153,63 @@ function setCode(newCode) {
     console.error("LeetCode Extension: Error setting code", e);
   }
   return false;
+}
+
+async function getTestCases() {
+  try {
+    const testCaseEditor = getTestCaseEditor();
+    return testCaseEditor.innerText;
+  } catch (e) {
+    console.error("LeetCode Extension: Error getting test cases", e);
+  }
+  return "";
+}
+
+async function appendTestCase(newTestCase) {
+  console.log("LeetCode Extension: appendTestCase called with", newTestCase);
+  try {
+    const testCaseEditor = getTestCaseEditor();
+
+    testCaseEditor.focus();
+
+    const currentContent = testCaseEditor.innerText;
+    const newContent = currentContent
+      ? currentContent + "\n" + newTestCase
+      : newTestCase;
+
+    // Select all
+    const range = document.createRange();
+    range.selectNodeContents(testCaseEditor);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // Paste
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData("text/plain", newContent);
+    const pasteEvent = new ClipboardEvent("paste", {
+      bubbles: true,
+      cancelable: true,
+      clipboardData: dataTransfer,
+    });
+    testCaseEditor.dispatchEvent(pasteEvent);
+    console.log("LeetCode Extension: Appended test case to CodeMirror editor");
+    return true;
+  } catch (e) {
+    console.error("LeetCode Extension: Error appending test case", e);
+  }
+  return false;
+}
+
+// test case editor is always found in CodeMirror 6
+function getTestCaseEditor() {
+  const cmContents = document.querySelectorAll(".cm-content");
+  console.log(
+    `LeetCode Extension: Number of CodeMirror editors: ${cmContents.length})`
+  );
+  if (cmContents.length == 1) {
+    return cmContents[0];
+  } else if (cmContents.length == 2) {
+    return cmContents[1];
+  }
 }

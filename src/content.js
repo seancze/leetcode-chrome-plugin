@@ -63,7 +63,8 @@ function createUI() {
         <textarea class="letc-input" id="letc-input" placeholder="Describe your solution logic..."></textarea>
         <div class="letc-actions">
           <button class="letc-btn letc-btn-secondary" id="letc-clear">Clear</button>
-          <button class="letc-btn letc-btn-primary" id="letc-generate">Generate Code</button>
+          <button class="letc-btn letc-btn-primary" id="letc-generate-test">Test</button>
+          <button class="letc-btn letc-btn-primary" id="letc-generate" style="margin-left: 5px;">Code</button>
         </div>
         <div class="letc-status" id="letc-status"></div>
       </div>
@@ -79,6 +80,9 @@ function createUI() {
   document
     .getElementById("letc-generate")
     .addEventListener("click", handleGenerate);
+  document
+    .getElementById("letc-generate-test")
+    .addEventListener("click", handleGenerateTest);
   document.getElementById("letc-clear").addEventListener("click", clearHistory);
 
   // Drag functionality
@@ -214,7 +218,83 @@ async function handleGenerate() {
     status.className = "letc-status error";
   } finally {
     generateBtn.disabled = false;
-    generateBtn.textContent = "Generate Code";
+    generateBtn.textContent = "Code";
+  }
+}
+
+async function handleGenerateTest() {
+  const status = document.getElementById("letc-status");
+  const generateTestBtn = document.getElementById("letc-generate-test");
+
+  // UI Loading State
+  generateTestBtn.disabled = true;
+  generateTestBtn.textContent = "Generating Test...";
+  status.textContent = "";
+  status.className = "letc-status";
+
+  const startTime = performance.now();
+
+  try {
+    // Get Problem Details
+    const problemDetails = getProblemDetails();
+    if (!problemDetails.title) {
+      throw new Error(
+        "Could not find problem details. Please ensure you are on a problem page."
+      );
+    }
+
+    // Get Current Code
+    const currentCode = await getCurrentCode();
+
+    // Get Current Test Cases
+    const currentTestCases = await getTestCases();
+
+    // Send to Background
+    const response = await chrome.runtime.sendMessage({
+      action: "generateTest",
+      data: {
+        currentCode: currentCode,
+        problemDetails: problemDetails,
+        currentTestCases: currentTestCases,
+      },
+    });
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    const endTime = performance.now();
+    const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+
+    // Append Test Case
+    try {
+      await appendTestCase(response.testCase);
+      status.textContent = `Test case generated in ${timeTaken}s and appended!`;
+      status.style.color = "green";
+    } catch (appendError) {
+      console.warn("Auto-append failed:", appendError);
+      status.innerHTML = `Test case generated in ${timeTaken}s but failed to append.`;
+      status.style.color = "orange";
+      status.className = "letc-status";
+
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "letc-btn letc-btn-primary letc-btn-xs";
+      copyBtn.textContent = "Copy Test Case";
+      copyBtn.style.marginLeft = "10px";
+      copyBtn.onclick = () => {
+        navigator.clipboard.writeText(response.testCase).then(() => {
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => (copyBtn.textContent = "Copy Test Case"), 2000);
+        });
+      };
+      status.appendChild(copyBtn);
+    }
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = "letc-status error";
+  } finally {
+    generateTestBtn.disabled = false;
+    generateTestBtn.textContent = "Test";
   }
 }
 
@@ -300,6 +380,57 @@ function setCurrentCode(code) {
     window.addEventListener("message", listener);
 
     // Timeout
+    setTimeout(() => {
+      window.removeEventListener("message", listener);
+      reject(new Error("Timeout waiting for editor response."));
+    }, 5000);
+  });
+}
+
+function getTestCases() {
+  return new Promise((resolve) => {
+    window.postMessage({ type: "LEETCODE_EXTENSION_GET_TEST_CASES" }, "*");
+
+    const listener = (event) => {
+      if (
+        event.source === window &&
+        event.data.type === "LEETCODE_EXTENSION_TEST_CASES_RESPONSE"
+      ) {
+        window.removeEventListener("message", listener);
+        resolve(event.data.testCases);
+      }
+    };
+    window.addEventListener("message", listener);
+
+    setTimeout(() => {
+      window.removeEventListener("message", listener);
+      resolve("");
+    }, 5000);
+  });
+}
+
+function appendTestCase(testCase) {
+  return new Promise((resolve, reject) => {
+    window.postMessage(
+      { type: "LEETCODE_EXTENSION_APPEND_TEST_CASE", testCase: testCase },
+      "*"
+    );
+
+    const listener = (event) => {
+      if (
+        event.source === window &&
+        event.data.type === "LEETCODE_EXTENSION_APPEND_TEST_CASE_RESPONSE"
+      ) {
+        window.removeEventListener("message", listener);
+        if (event.data.success) {
+          resolve();
+        } else {
+          reject(new Error("Failed to append test case"));
+        }
+      }
+    };
+    window.addEventListener("message", listener);
+
     setTimeout(() => {
       window.removeEventListener("message", listener);
       reject(new Error("Timeout waiting for editor response."));

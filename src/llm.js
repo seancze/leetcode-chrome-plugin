@@ -87,3 +87,73 @@ Violation of any rule above is an error.`;
     usage: data.usage,
   };
 }
+
+export async function generateTest(
+  apiKey,
+  currentCode,
+  problemDetails,
+  currentTestCases,
+  model
+) {
+  const systemPrompt = `You are an expert software tester. Your task is to generate a single new test case for a coding problem.
+
+Rules:
+1. Read the problem description, current code, and existing test cases.
+2. Suggest a SINGLE new test case that obeys the constraints.
+3. If the user's code is incorrect, the new test case should cause the user's code to fail.
+4. If the user's code is likely correct, the new test case should be a stress test (max constraints) to check for TLE/MLE.
+5. Output ONLY the raw test case input, formatted exactly as LeetCode expects (e.g. line separated values or specific format). Do not add markdown, explanations, or code blocks.
+6. Do not repeat existing test cases.`;
+
+  const messages = [
+    { role: "system", content: systemPrompt },
+    {
+      role: "user",
+      content: `Problem Title: ${problemDetails.title}\nProblem Description:\n${problemDetails.description}\n\nCurrent Code:\n\`\`\`python\n${currentCode}\n\`\`\`\n\nCurrent Test Cases:\n${currentTestCases}\n\nGenerate a single new test case.`,
+    },
+  ];
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model,
+      input: messages,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || "OpenAI API request failed");
+  }
+
+  const data = await response.json();
+
+  let generatedTest = "";
+  if (data.output) {
+    for (const item of data.output) {
+      if (item.type === "message" && item.role === "assistant") {
+        for (const contentItem of item.content) {
+          if (contentItem.type === "output_text") {
+            generatedTest += contentItem.text;
+          }
+        }
+      }
+    }
+  }
+
+  if (!generatedTest) {
+    throw new Error("No generated test case found in response");
+  }
+
+  // Clean up
+  const cleanTest = generatedTest.trim();
+
+  return {
+    testCase: cleanTest,
+    usage: data.usage,
+  };
+}
