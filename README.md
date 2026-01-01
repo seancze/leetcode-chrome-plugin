@@ -45,16 +45,24 @@ This Chrome extension allows you to solve LeetCode problems by writing solutions
 
 ## Running tests
 
-### Run all tests
+### Run tests for code generation
 
 ```bash
-npx promptfoo@latest eval -c promptfoo/promptfooconfig.yaml --no-cache
+npx promptfoo@latest eval -c promptfoo/code/promptfooconfig.yaml --no-cache
+```
+
+### Run tests for test generation
+
+```bash
+npx promptfoo@latest eval -c promptfoo/test/promptfooconfig.yaml --no-cache
 ```
 
 ### View logs
 
+Add a `--verbose` flag. For example,
+
 ```bash
-npx promptfoo@latest eval -c promptfoo/promptfooconfig.yaml --no-cache --verbose
+npx promptfoo@latest eval -c promptfoo/code/promptfooconfig.yaml --no-cache --verbose
 ```
 
 ### View results in browser
