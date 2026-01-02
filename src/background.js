@@ -15,12 +15,6 @@ chrome.runtime.onConnect.addListener((port) => {
 async function handleGenerateCodeStream(port, request) {
   try {
     const { apiKey } = await getApiKey();
-    if (!apiKey) {
-      port.postMessage({
-        error: "API Key not found. Please set it in the extension options.",
-      });
-      return;
-    }
 
     const { currentCode, chatHistory, userPrompt } = request;
 
@@ -44,12 +38,6 @@ async function handleGenerateCodeStream(port, request) {
 async function handleGenerateTestStream(port, request) {
   try {
     const { apiKey } = await getApiKey();
-    if (!apiKey) {
-      port.postMessage({
-        error: "API Key not found. Please set it in the extension options.",
-      });
-      return;
-    }
 
     const { currentCode, problemDetails, currentTestCases } = request;
 

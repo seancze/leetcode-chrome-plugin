@@ -25,8 +25,15 @@ export default async function handler(req) {
   }
 
   try {
-    const { apiKey, userPrompt, currentCode, chatHistory, model } =
-      await req.json();
+    const {
+      apiKey: reqApiKey,
+      userPrompt,
+      currentCode,
+      chatHistory,
+      model,
+    } = await req.json();
+
+    const apiKey = reqApiKey || process.env.OPENAI_API_KEY;
 
     if (!model) {
       return new Response(JSON.stringify({ error: "Model is required" }), {
