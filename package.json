@@ -1,0 +1,9 @@
+{
+  "name": "leetcode-chrome-extension-backend",
+  "version": "1.0.0",
+  "description": "Backend for LeetCode Chrome extension",
+  "main": "index.js",
+  "dependencies": {
+    "openai": "^6.15.0"
+  }
+}
