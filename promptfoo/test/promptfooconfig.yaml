@@ -2,7 +2,7 @@ prompts:
   - "Generate test case"
 
 providers:
-  - id: file://provider.js
+  - id: file://provider.ts
     label: "gpt-5.1-codex-mini"
     config:
       model: gpt-5.1-codex-mini

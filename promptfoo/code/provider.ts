@@ -1,5 +1,10 @@
-class LeetCodeProvider {
-  constructor(options) {
+import { generateCode } from "../../src/llm";
+
+export default class LeetCodeProvider {
+  providerId: string;
+  config: any;
+
+  constructor(options: any) {
     this.providerId = options.id || "leetcode-custom";
     this.config = options.config || {};
   }
@@ -8,7 +13,7 @@ class LeetCodeProvider {
     return this.providerId;
   }
 
-  async callApi(prompt, context) {
+  async callApi(prompt: string, context: any) {
     const { currentCode, chatHistory } = context.vars;
     const userPrompt = prompt;
 
@@ -18,15 +23,13 @@ class LeetCodeProvider {
     }
 
     try {
-      // Dynamic import for ESM module
-      const { generateCode } = await import("../../src/llm.js");
-
       const result = await generateCode(
         apiKey,
         userPrompt,
         currentCode,
         chatHistory,
-        this.config.model
+        this.config.model,
+        () => {} // onChunk
       );
 
       return {
@@ -37,10 +40,8 @@ class LeetCodeProvider {
           completion: result.usage.outputTokens,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       return { error: error.message };
     }
   }
 }
-
-module.exports = LeetCodeProvider;

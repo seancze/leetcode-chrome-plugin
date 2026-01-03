@@ -5,7 +5,7 @@ export const config = {
   runtime: "edge",
 };
 
-export default async function handler(req) {
+export default async function handler(req: Request) {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 200,
@@ -31,7 +31,7 @@ export default async function handler(req) {
       currentCode,
       chatHistory,
       model,
-    } = await req.json();
+    } = (await req.json()) as any;
 
     const apiKey = reqApiKey || process.env.OPENAI_API_KEY;
 
@@ -75,10 +75,10 @@ Rules you must follow at all times:
 
 Violation of any rule above is an error.`;
 
-    const messages = [{ role: "system", content: systemPrompt }];
+    const messages: any[] = [{ role: "system", content: systemPrompt }];
 
     if (chatHistory && chatHistory.length > 0) {
-      chatHistory.forEach((msg) => {
+      chatHistory.forEach((msg: any) => {
         messages.push({ role: msg.role, content: msg.content });
       });
     }
@@ -114,7 +114,7 @@ Violation of any rule above is an error.`;
         }
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: {

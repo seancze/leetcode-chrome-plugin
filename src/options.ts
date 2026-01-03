@@ -1,9 +1,15 @@
 document.addEventListener("DOMContentLoaded", restoreOptions);
-document.getElementById("save").addEventListener("click", saveOptions);
+const saveButton = document.getElementById("save");
+if (saveButton) {
+  saveButton.addEventListener("click", saveOptions);
+}
 
 function saveOptions() {
-  const apiKey = document.getElementById("apiKey").value;
+  const apiKeyInput = document.getElementById("apiKey") as HTMLInputElement;
+  const apiKey = apiKeyInput ? apiKeyInput.value : "";
   const status = document.getElementById("status");
+
+  if (!status) return;
 
   if (!apiKey) {
     status.textContent = "Please enter an API key.";
@@ -33,7 +39,10 @@ function saveOptions() {
 function restoreOptions() {
   chrome.storage.local.get(["openaiApiKey"], (result) => {
     if (result.openaiApiKey) {
-      document.getElementById("apiKey").value = result.openaiApiKey;
+      const apiKeyInput = document.getElementById("apiKey") as HTMLInputElement;
+      if (apiKeyInput) {
+        apiKeyInput.value = (result.openaiApiKey as string) || "";
+      }
     }
   });
 }

@@ -1,10 +1,15 @@
-// Inject the script to interact with Monaco Editor
 const script = document.createElement("script");
 script.src = chrome.runtime.getURL("injected.js");
 (document.head || document.documentElement).appendChild(script);
 
+interface ChatMessage {
+  role: string;
+  content: string;
+  reasoning?: string;
+}
+
 let currentProblemSlug = "";
-let chatHistory = [];
+let chatHistory: ChatMessage[] = [];
 let isPanelCollapsed = false;
 
 // Initialize
@@ -74,46 +79,53 @@ function createUI() {
   document.body.appendChild(panel);
 
   // Event Listeners
-  document
-    .getElementById("letc-minimize")
-    .addEventListener("click", toggleCollapse);
-  document
-    .getElementById("letc-generate")
-    .addEventListener("click", handleGenerate);
-  document
-    .getElementById("letc-generate-test")
-    .addEventListener("click", handleGenerateTest);
-  document.getElementById("letc-clear").addEventListener("click", clearHistory);
+  const minimizeBtn = document.getElementById("letc-minimize");
+  if (minimizeBtn) minimizeBtn.addEventListener("click", toggleCollapse);
+
+  const generateBtn = document.getElementById("letc-generate");
+  if (generateBtn) generateBtn.addEventListener("click", handleGenerate);
+
+  const generateTestBtn = document.getElementById("letc-generate-test");
+  if (generateTestBtn)
+    generateTestBtn.addEventListener("click", handleGenerateTest);
+
+  const clearBtn = document.getElementById("letc-clear");
+  if (clearBtn) clearBtn.addEventListener("click", clearHistory);
 
   // Drag functionality
   const header = document.getElementById("letc-header");
   let isDragging = false;
-  let currentX;
-  let currentY;
-  let initialX;
-  let initialY;
+  let currentX: number;
+  let currentY: number;
+  let initialX: number;
+  let initialY: number;
   let xOffset = 0;
   let yOffset = 0;
 
-  header.addEventListener("mousedown", dragStart);
+  if (header) {
+    header.addEventListener("mousedown", dragStart);
+  }
   document.addEventListener("mouseup", dragEnd);
   document.addEventListener("mousemove", drag);
 
-  function dragStart(e) {
+  function dragStart(e: MouseEvent) {
     initialX = e.clientX - xOffset;
     initialY = e.clientY - yOffset;
-    if (e.target === header || e.target.parentNode === header) {
+    if (
+      e.target === header ||
+      (e.target as HTMLElement).parentNode === header
+    ) {
       isDragging = true;
     }
   }
 
-  function dragEnd(e) {
+  function dragEnd(e: MouseEvent) {
     initialX = currentX;
     initialY = currentY;
     isDragging = false;
   }
 
-  function drag(e) {
+  function drag(e: MouseEvent) {
     if (isDragging) {
       e.preventDefault();
       currentX = e.clientX - initialX;
@@ -124,7 +136,7 @@ function createUI() {
     }
   }
 
-  function setTranslate(xPos, yPos, el) {
+  function setTranslate(xPos: number, yPos: number, el: HTMLElement) {
     el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
   }
 }
@@ -134,21 +146,27 @@ function toggleCollapse() {
   const btn = document.getElementById("letc-minimize");
   isPanelCollapsed = !isPanelCollapsed;
 
-  if (isPanelCollapsed) {
-    panel.classList.add("collapsed");
-    btn.textContent = "+";
-  } else {
-    panel.classList.remove("collapsed");
-    btn.textContent = "−";
+  if (panel && btn) {
+    if (isPanelCollapsed) {
+      panel.classList.add("collapsed");
+      btn.textContent = "+";
+    } else {
+      panel.classList.remove("collapsed");
+      btn.textContent = "−";
+    }
   }
 }
 
 async function handleGenerate() {
-  const input = document.getElementById("letc-input");
-  const userPrompt = input.value.trim();
+  const input = document.getElementById("letc-input") as HTMLTextAreaElement;
   const status = document.getElementById("letc-status");
-  const generateBtn = document.getElementById("letc-generate");
+  const generateBtn = document.getElementById(
+    "letc-generate"
+  ) as HTMLButtonElement;
 
+  if (!input || !status || !generateBtn) return;
+
+  const userPrompt = input.value.trim();
   if (!userPrompt) return;
 
   // UI Loading State
@@ -167,7 +185,11 @@ async function handleGenerate() {
     chatHistory.push({ role: "user", content: userPrompt });
 
     // Add placeholder for Assistant Response
-    const assistantMsg = { role: "assistant", content: "", reasoning: "" };
+    const assistantMsg: ChatMessage = {
+      role: "assistant",
+      content: "",
+      reasoning: "",
+    };
     chatHistory.push(assistantMsg);
     renderHistory();
 
@@ -240,7 +262,7 @@ async function handleGenerate() {
         generateBtn.textContent = "Code";
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     status.textContent = error.message;
     status.className = "letc-status error";
     generateBtn.disabled = false;
@@ -248,7 +270,7 @@ async function handleGenerate() {
   }
 }
 
-function updateLastMessage(msg) {
+function updateLastMessage(msg: ChatMessage) {
   const container = document.getElementById("letc-history");
   if (!container) return;
 
@@ -285,6 +307,7 @@ function updateLastMessage(msg) {
       applyBtn.style.marginTop = "5px";
       applyBtn.onclick = async () => {
         const status = document.getElementById("letc-status");
+        if (!status) return;
         try {
           status.textContent = "Applying code...";
           await setCurrentCode(msg.content);
@@ -319,7 +342,11 @@ function updateLastMessage(msg) {
 
 async function handleGenerateTest() {
   const status = document.getElementById("letc-status");
-  const generateTestBtn = document.getElementById("letc-generate-test");
+  const generateTestBtn = document.getElementById(
+    "letc-generate-test"
+  ) as HTMLButtonElement;
+
+  if (!status || !generateTestBtn) return;
 
   // UI Loading State
   generateTestBtn.disabled = true;
@@ -406,7 +433,7 @@ async function handleGenerateTest() {
         generateTestBtn.textContent = "Test";
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     status.textContent = error.message;
     status.className = "letc-status error";
     generateTestBtn.disabled = false;
@@ -423,7 +450,7 @@ function getProblemDetails() {
       "div.flex.items-start.justify-between.gap-4 > div.flex.items-center.gap-2 > div"
     ) || document.querySelector('[data-cy="question-title"]');
   if (titleElement) {
-    title = titleElement.innerText;
+    title = (titleElement as HTMLElement).innerText;
   } else {
     // Fallback to document title
     const docTitle = document.title;
@@ -442,9 +469,10 @@ function getProblemDetails() {
   if (!descElement) {
     // This is a bit hacky, but LeetCode classes are obfuscated
     const containers = document.querySelectorAll("div.xFUwe"); // Another potential class
-    if (containers.length > 0) description = containers[0].innerText;
+    if (containers.length > 0)
+      description = (containers[0] as HTMLElement).innerText;
   } else {
-    description = descElement.innerText;
+    description = (descElement as HTMLElement).innerText;
   }
 
   return { title, description };
@@ -454,7 +482,7 @@ function getCurrentCode() {
   return new Promise((resolve) => {
     window.postMessage({ type: "LEETCODE_EXTENSION_GET_CODE" }, "*");
 
-    const listener = (event) => {
+    const listener = (event: MessageEvent) => {
       if (
         event.source === window &&
         event.data.type === "LEETCODE_EXTENSION_CODE_RESPONSE"
@@ -473,14 +501,14 @@ function getCurrentCode() {
   });
 }
 
-function setCurrentCode(code) {
-  return new Promise((resolve, reject) => {
+function setCurrentCode(code: string) {
+  return new Promise<void>((resolve, reject) => {
     window.postMessage(
       { type: "LEETCODE_EXTENSION_SET_CODE", code: code },
       "*"
     );
 
-    const listener = (event) => {
+    const listener = (event: MessageEvent) => {
       if (
         event.source === window &&
         event.data.type === "LEETCODE_EXTENSION_SET_CODE_RESPONSE"
@@ -507,7 +535,7 @@ function getTestCases() {
   return new Promise((resolve) => {
     window.postMessage({ type: "LEETCODE_EXTENSION_GET_TEST_CASES" }, "*");
 
-    const listener = (event) => {
+    const listener = (event: MessageEvent) => {
       if (
         event.source === window &&
         event.data.type === "LEETCODE_EXTENSION_TEST_CASES_RESPONSE"
@@ -525,14 +553,14 @@ function getTestCases() {
   });
 }
 
-function appendTestCase(testCase) {
-  return new Promise((resolve, reject) => {
+function appendTestCase(testCase: string) {
+  return new Promise<void>((resolve, reject) => {
     window.postMessage(
       { type: "LEETCODE_EXTENSION_APPEND_TEST_CASE", testCase: testCase },
       "*"
     );
 
-    const listener = (event) => {
+    const listener = (event: MessageEvent) => {
       if (
         event.source === window &&
         event.data.type === "LEETCODE_EXTENSION_APPEND_TEST_CASE_RESPONSE"
@@ -556,14 +584,15 @@ function appendTestCase(testCase) {
 
 function loadHistory() {
   chrome.storage.local.get([`history_${currentProblemSlug}`], (result) => {
-    chatHistory = result[`history_${currentProblemSlug}`] || [];
+    chatHistory =
+      (result[`history_${currentProblemSlug}`] as ChatMessage[]) || [];
     renderHistory();
   });
 }
 
 function saveHistory() {
   const key = `history_${currentProblemSlug}`;
-  const data = {};
+  const data: { [key: string]: ChatMessage[] } = {};
   data[key] = chatHistory;
   chrome.storage.local.set(data);
 }
@@ -612,6 +641,7 @@ function renderHistory() {
       applyBtn.style.marginTop = "5px";
       applyBtn.onclick = async () => {
         const status = document.getElementById("letc-status");
+        if (!status) return;
         try {
           status.textContent = "Applying code...";
           await setCurrentCode(msg.content);

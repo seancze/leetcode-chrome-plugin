@@ -2,10 +2,21 @@
   "name": "leetcode-chrome-extension-backend",
   "version": "1.0.0",
   "description": "Backend for LeetCode Chrome extension",
+  "type": "module",
   "main": "index.js",
+  "scripts": {
+    "build": "tsc && cp src/manifest.json dist/src/ && cp src/*.html dist/src/ && cp src/*.css dist/src/",
+    "watch": "tsc -w"
+  },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.2",
     "ai": "^6.0.5",
     "openai": "^6.15.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.32",
+    "@types/node": "^25.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

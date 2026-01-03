@@ -1,18 +1,21 @@
 import { generateCode, generateTest } from "./llm.js";
 
-chrome.runtime.onConnect.addListener((port) => {
+chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
   if (port.name === "generateCode") {
-    port.onMessage.addListener((request) => {
+    port.onMessage.addListener((request: any) => {
       handleGenerateCodeStream(port, request);
     });
   } else if (port.name === "generateTest") {
-    port.onMessage.addListener((request) => {
+    port.onMessage.addListener((request: any) => {
       handleGenerateTestStream(port, request);
     });
   }
 });
 
-async function handleGenerateCodeStream(port, request) {
+async function handleGenerateCodeStream(
+  port: chrome.runtime.Port,
+  request: any
+) {
   try {
     const { apiKey } = await getApiKey();
 
@@ -24,18 +27,21 @@ async function handleGenerateCodeStream(port, request) {
       currentCode,
       chatHistory,
       "gpt-5.1-codex-mini",
-      (chunk) => {
+      (chunk: any) => {
         port.postMessage({ type: "chunk", data: chunk });
       }
     );
     port.postMessage({ type: "complete", code: result.code });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating code:", error);
     port.postMessage({ error: error.message });
   }
 }
 
-async function handleGenerateTestStream(port, request) {
+async function handleGenerateTestStream(
+  port: chrome.runtime.Port,
+  request: any
+) {
   try {
     const { apiKey } = await getApiKey();
 
@@ -47,21 +53,21 @@ async function handleGenerateTestStream(port, request) {
       problemDetails,
       currentTestCases,
       "gpt-5.1-codex-mini",
-      (chunk) => {
+      (chunk: any) => {
         port.postMessage({ type: "chunk", data: chunk });
       }
     );
     port.postMessage({ type: "complete", result: result });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating test:", error);
     port.postMessage({ error: error.message });
   }
 }
 
-function getApiKey() {
+function getApiKey(): Promise<{ apiKey: string }> {
   return new Promise((resolve) => {
     chrome.storage.local.get(["openaiApiKey"], (result) => {
-      resolve({ apiKey: result.openaiApiKey });
+      resolve({ apiKey: result.openaiApiKey as string });
     });
   });
 }

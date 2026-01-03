@@ -1,12 +1,12 @@
 const VERCEL_API_URL = "https://leetcode-chrome-extension.vercel.app";
 
 export async function generateCode(
-  apiKey,
-  userPrompt,
-  currentCode,
-  chatHistory,
-  model,
-  onChunk
+  apiKey: string,
+  userPrompt: string,
+  currentCode: string,
+  chatHistory: any[],
+  model: string,
+  onChunk: (chunk: any) => void
 ) {
   const { fullText, usage } = await streamResponse(
     "/api/v1/generate-code",
@@ -31,12 +31,12 @@ export async function generateCode(
 }
 
 export async function generateTest(
-  apiKey,
-  currentCode,
-  problemDetails,
-  currentTestCases,
-  model,
-  onChunk
+  apiKey: string,
+  currentCode: string,
+  problemDetails: any,
+  currentTestCases: any,
+  model: string,
+  onChunk: (chunk: any) => void
 ) {
   const { fullText, usage } = await streamResponse(
     "/api/v1/generate-test",
@@ -60,7 +60,11 @@ export async function generateTest(
   }
 }
 
-async function streamResponse(endpoint, body, onChunk) {
+async function streamResponse(
+  endpoint: string,
+  body: any,
+  onChunk: (chunk: any) => void
+) {
   const response = await fetch(`${VERCEL_API_URL}${endpoint}`, {
     method: "POST",
     headers: {
@@ -74,9 +78,13 @@ async function streamResponse(endpoint, body, onChunk) {
     throw new Error(errorData.error || "API request failed");
   }
 
+  if (!response.body) {
+    throw new Error("Response body is null");
+  }
+
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = "";
+  let buffer: string | undefined = "";
   let fullText = "";
   let usage = null;
 
@@ -85,7 +93,7 @@ async function streamResponse(endpoint, body, onChunk) {
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
+    const lines: string[] = buffer!.split("\n");
     buffer = lines.pop(); // Keep the last incomplete line
 
     for (const line of lines) {

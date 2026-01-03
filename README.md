@@ -8,22 +8,15 @@ This Chrome extension allows you to solve LeetCode problems by writing solutions
 - **Context Aware**: Uses the problem title, description, and your current code context.
 - **Chat History**: Maintains a conversation history per problem so you can refine your solution iteratively.
 - **Mobile Friendly**: Floating UI designed for touch interactions.
-- **Secure**: Your OpenAI API key is stored locally in your browser.
 
 ## Installation
 
 1.  Clone or download this repository.
-2.  Open Chrome and navigate to `chrome://extensions/`.
-3.  Enable **Developer mode** in the top right corner.
-4.  Click **Load unpacked**.
-5.  Select the `src/` folder
-
-## Setup
-
-1.  Click the extension icon in the Chrome toolbar (or pin it first).
-2.  Click "Extension Options" (or right-click the icon and select Options).
-3.  Enter your OpenAI API Key (starts with `sk-...`).
-4.  Click **Save Key**.
+2.  Build the repository: `npm run build`
+3.  Open Chrome and navigate to `chrome://extensions/`.
+4.  Enable **Developer mode** in the top right corner.
+5.  Click **Load unpacked**.
+6.  Select the `dist/src/` folder
 
 ## Usage
 
@@ -38,23 +31,24 @@ This Chrome extension allows you to solve LeetCode problems by writing solutions
 ## Development
 
 - `src/manifest.json`: Extension configuration.
-- `src/background.js`: Handles OpenAI API requests.
+- `src/background.js`: Handles asynchronous requests.
+- `src/llm.js`: Handles OpenAI API requests.
 - `src/content.js`: Injects UI and interacts with the page.
 - `src/injected.js`: Interacts with the Monaco editor.
 - `src/options.html`: Settings page.
 
 ## Running tests
 
-### Run tests for code generation
+### Code generation
 
 ```bash
-npx promptfoo@latest eval -c promptfoo/code/promptfooconfig.yaml --no-cache
+npx promptfoo@0.119.14 eval -c promptfoo/code/promptfooconfig.yaml --no-cache
 ```
 
-### Run tests for test generation
+### Test generation
 
 ```bash
-npx promptfoo@latest eval -c promptfoo/test/promptfooconfig.yaml --no-cache
+npx promptfoo@0.119.14 eval -c promptfoo/test/promptfooconfig.yaml --no-cache
 ```
 
 ### View logs
@@ -62,11 +56,11 @@ npx promptfoo@latest eval -c promptfoo/test/promptfooconfig.yaml --no-cache
 Add a `--verbose` flag. For example,
 
 ```bash
-npx promptfoo@latest eval -c promptfoo/code/promptfooconfig.yaml --no-cache --verbose
+npx promptfoo@0.119.14 eval -c promptfoo/code/promptfooconfig.yaml --no-cache --verbose
 ```
 
 ### View results in browser
 
 ```bash
-npx promptfoo@latest view
+npx promptfoo@0.119.14 view
 ```

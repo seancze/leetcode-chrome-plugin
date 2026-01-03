@@ -5,7 +5,7 @@ export const config = {
   runtime: "edge",
 };
 
-export default async function handler(req) {
+export default async function handler(req: Request) {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 200,
@@ -31,7 +31,7 @@ export default async function handler(req) {
       problemDetails,
       currentTestCases,
       model,
-    } = await req.json();
+    } = (await req.json()) as any;
 
     const apiKey = reqApiKey || process.env.OPENAI_API_KEY;
 
@@ -73,7 +73,7 @@ Return the result as a JSON object with the following structure:
   "isUserCorrect": boolean
 }`;
 
-    const messages = [
+    const messages: any[] = [
       { role: "system", content: systemPrompt },
       {
         role: "user",
@@ -103,7 +103,7 @@ Return the result as a JSON object with the following structure:
         }
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: {

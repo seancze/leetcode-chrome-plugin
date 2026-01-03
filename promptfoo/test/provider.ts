@@ -1,5 +1,10 @@
-class TestGeneratorProvider {
-  constructor(options) {
+import { generateTest } from "../../src/llm";
+
+export default class TestGeneratorProvider {
+  providerId: string;
+  config: any;
+
+  constructor(options: any) {
     this.providerId = options.id || "test-generator";
     this.config = options.config || {};
   }
@@ -8,7 +13,7 @@ class TestGeneratorProvider {
     return this.providerId;
   }
 
-  async callApi(prompt, context) {
+  async callApi(prompt: string, context: any) {
     const { currentCode, problemDetails, currentTestCases } = context.vars;
 
     const apiKey = process.env.OPENAI_API_KEY;
@@ -17,9 +22,6 @@ class TestGeneratorProvider {
     }
 
     try {
-      // Dynamic import for ESM module
-      const { generateTest } = await import("../../src/llm.js");
-
       // problemDetails comes as a string from the yaml vars, so we parse it
       const parsedProblemDetails =
         typeof problemDetails === "string"
@@ -31,7 +33,8 @@ class TestGeneratorProvider {
         currentCode,
         parsedProblemDetails,
         currentTestCases || "",
-        this.config.model
+        this.config.model,
+        () => {} // onChunk
       );
 
       return {
@@ -49,10 +52,8 @@ class TestGeneratorProvider {
           completion: result.usage.outputTokens,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       return { error: error.message };
     }
   }
 }
-
-module.exports = TestGeneratorProvider;

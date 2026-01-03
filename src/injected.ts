@@ -21,7 +21,7 @@ window.addEventListener("message", (event) => {
   }
 
   if (event.data.type === "LEETCODE_EXTENSION_GET_TEST_CASES") {
-    getTestCases().then((testCases) => {
+    getInjectedTestCases().then((testCases) => {
       window.postMessage(
         {
           type: "LEETCODE_EXTENSION_TEST_CASES_RESPONSE",
@@ -33,7 +33,7 @@ window.addEventListener("message", (event) => {
   }
 
   if (event.data.type === "LEETCODE_EXTENSION_APPEND_TEST_CASE") {
-    appendTestCase(event.data.testCase).then((success) => {
+    appendInjectedTestCase(event.data.testCase).then((success) => {
       window.postMessage(
         {
           type: "LEETCODE_EXTENSION_APPEND_TEST_CASE_RESPONSE",
@@ -47,21 +47,22 @@ window.addEventListener("message", (event) => {
 
 function getCode() {
   try {
-    if (window.monaco && window.monaco.editor) {
+    const monaco = (window as any).monaco;
+    if (monaco && monaco.editor) {
       // Try to get from focused/active editor first
-      const editors = window.monaco.editor.getEditors();
+      const editors = monaco.editor.getEditors();
       if (editors.length > 0) {
         return editors[0].getValue();
       }
       // Fallback to models
-      const models = window.monaco.editor.getModels();
+      const models = monaco.editor.getModels();
       if (models.length > 0) {
         return models[models.length - 1].getValue();
       }
     }
 
     // Fallback for CodeMirror 6 (used in LeetCode mobile site)
-    const cm6Content = document.querySelector(".cm-content");
+    const cm6Content = document.querySelector(".cm-content") as HTMLElement;
     if (cm6Content) {
       return cm6Content.innerText;
     }
@@ -71,10 +72,11 @@ function getCode() {
   return "";
 }
 
-function setCode(newCode) {
+function setCode(newCode: string) {
   try {
-    if (window.monaco && window.monaco.editor) {
-      const editors = window.monaco.editor.getEditors();
+    const monaco = (window as any).monaco;
+    if (monaco && monaco.editor) {
+      const editors = monaco.editor.getEditors();
       if (editors.length > 0) {
         const editor = editors[0];
         const model = editor.getModel();
@@ -94,7 +96,7 @@ function setCode(newCode) {
         return true;
       }
 
-      const models = window.monaco.editor.getModels();
+      const models = monaco.editor.getModels();
       if (models.length > 0) {
         const model = models[models.length - 1];
         // Use pushEditOperations to preserve undo stack
@@ -113,7 +115,7 @@ function setCode(newCode) {
     }
 
     // Fallback for CodeMirror 6 (used in LeetCode mobile site)
-    const cm6Content = document.querySelector(".cm-content");
+    const cm6Content = document.querySelector(".cm-content") as HTMLElement;
     if (cm6Content) {
       try {
         cm6Content.focus();
@@ -123,8 +125,10 @@ function setCode(newCode) {
         range.selectNodeContents(cm6Content);
 
         const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
 
         // Try paste event (execCommand is deprecated)
         let success = false;
@@ -161,30 +165,34 @@ async function ensureTestCaseTab() {
     // if the test case tab is not open
     // dispatch a click event to open it
     const tabButton = testCaseTab.closest(".flexlayout__tab_button");
-    tabButton.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-    tabButton.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-    tabButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    if (tabButton) {
+      tabButton.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+      tabButton.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+      tabButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
   }
 }
 
-async function getTestCases() {
+async function getInjectedTestCases() {
   try {
     await ensureTestCaseTab();
     const testCaseEditor = getTestCaseEditor();
 
-    return testCaseEditor.innerText;
+    return testCaseEditor ? testCaseEditor.innerText : "";
   } catch (e) {
     console.error("LeetCode Extension: Error getting test cases", e);
   }
   return "";
 }
 
-async function appendTestCase(newTestCase) {
+async function appendInjectedTestCase(newTestCase: string) {
   console.log("LeetCode Extension: appendTestCase called with", newTestCase);
   try {
     await ensureTestCaseTab();
     const testCaseEditor = getTestCaseEditor();
+
+    if (!testCaseEditor) return false;
 
     testCaseEditor.focus();
 
@@ -197,8 +205,10 @@ async function appendTestCase(newTestCase) {
     const range = document.createRange();
     range.selectNodeContents(testCaseEditor);
     const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
+    if (selection) {
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
 
     // Paste
     const dataTransfer = new DataTransfer();
@@ -218,14 +228,16 @@ async function appendTestCase(newTestCase) {
 }
 
 // test case editor is always found in CodeMirror 6
-function getTestCaseEditor() {
+function getTestCaseEditor(): HTMLElement | null {
   const cmContents = document.querySelectorAll(".cm-content");
   console.log(
     `LeetCode Extension: Number of CodeMirror editors: ${cmContents.length})`
   );
+  // NOTE: logic for getting test case editor was found empirically and may break when LeetCode updates their site
   if (cmContents.length == 1) {
-    return cmContents[0];
-  } else if (cmContents.length == 2) {
-    return cmContents[1];
+    return cmContents[0] as HTMLElement;
+  } else if (cmContents.length > 1) {
+    return cmContents[1] as HTMLElement;
   }
+  return null;
 }
