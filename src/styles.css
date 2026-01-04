@@ -1,12 +1,97 @@
+/* CSS Variables for Theming */
+#leetcode-english-to-code-panel {
+  --letc-bg: #ffffff;
+  --letc-border: #e0e0e0;
+  --letc-shadow: rgba(0, 0, 0, 0.15);
+  --letc-text: #333333;
+  --letc-header-bg: #f7f7f7;
+  --letc-header-border: #e0e0e0;
+  --letc-icon: #666666;
+  --letc-icon-hover: #333333;
+  --letc-history-bg: #fafafa;
+  --letc-history-border: #eeeeee;
+  --letc-msg-user-bg: #007bff;
+  --letc-msg-user-text: #ffffff;
+  --letc-msg-assistant-bg: #e9ecef;
+  --letc-msg-assistant-text: #333333;
+  --letc-input-bg: #ffffff;
+  --letc-input-border: #cccccc;
+  --letc-input-text: #000000;
+  --letc-input-placeholder: #aaaaaa;
+  --letc-status: #666666;
+  --letc-status-error: #dc3545;
+  --letc-scrollbar-track: #f1f1f1;
+  --letc-scrollbar-thumb: #888;
+  --letc-scrollbar-thumb-hover: #555;
+}
+
+/* Dark Mode Variables - Applied via Media Query OR Parent Class */
+@media (prefers-color-scheme: dark) {
+  #leetcode-english-to-code-panel {
+    --letc-bg: #1e1e1e;
+    --letc-border: #444444;
+    --letc-shadow: rgba(0, 0, 0, 0.5);
+    --letc-text: #e0e0e0;
+    --letc-header-bg: #2d2d2d;
+    --letc-header-border: #444444;
+    --letc-icon: #aaaaaa;
+    --letc-icon-hover: #ffffff;
+    --letc-history-bg: #252526;
+    --letc-history-border: #444444;
+    --letc-msg-user-bg: #007bff;
+    --letc-msg-user-text: #ffffff;
+    --letc-msg-assistant-bg: #333333;
+    --letc-msg-assistant-text: #e0e0e0;
+    --letc-input-bg: #2d2d2d;
+    --letc-input-border: #444444;
+    --letc-input-text: #e0e0e0;
+    --letc-input-placeholder: #aaaaaa;
+    --letc-status: #aaaaaa;
+    --letc-status-error: #ff6b6b;
+    --letc-scrollbar-track: #1e1e1e;
+    --letc-scrollbar-thumb: #555;
+    --letc-scrollbar-thumb-hover: #888;
+  }
+}
+
+/* Force Dark Mode if LeetCode is in dark mode */
+/* used when user toggles dark mode via LeetCode settings (not browser/system settings) */
+html.dark #leetcode-english-to-code-panel,
+html[data-theme="dark"] #leetcode-english-to-code-panel {
+  --letc-bg: #1e1e1e;
+  --letc-border: #444444;
+  --letc-shadow: rgba(0, 0, 0, 0.5);
+  --letc-text: #e0e0e0;
+  --letc-header-bg: #2d2d2d;
+  --letc-header-border: #444444;
+  --letc-icon: #aaaaaa;
+  --letc-icon-hover: #ffffff;
+  --letc-history-bg: #252526;
+  --letc-history-border: #444444;
+  --letc-msg-user-bg: #007bff;
+  --letc-msg-user-text: #ffffff;
+  --letc-msg-assistant-bg: #333333;
+  --letc-msg-assistant-text: #e0e0e0;
+  --letc-input-bg: #2d2d2d;
+  --letc-input-border: #444444;
+  --letc-input-text: #e0e0e0;
+  --letc-input-placeholder: #aaaaaa;
+  --letc-status: #aaaaaa;
+  --letc-status-error: #ff6b6b;
+  --letc-scrollbar-track: #1e1e1e;
+  --letc-scrollbar-thumb: #555;
+  --letc-scrollbar-thumb-hover: #888;
+}
+
 #leetcode-english-to-code-panel {
   position: fixed;
   bottom: 20px;
   right: 20px;
   width: 350px;
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
+  background-color: var(--letc-bg);
+  border: 1px solid var(--letc-border);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--letc-shadow);
   z-index: 9999;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
@@ -14,6 +99,7 @@
   flex-direction: column;
   max-height: 80vh;
   transition: height 0.3s ease;
+  color: var(--letc-text);
 }
 
 #leetcode-english-to-code-panel.collapsed {
@@ -23,8 +109,8 @@
 
 .letc-header {
   padding: 10px 15px;
-  background-color: #f7f7f7;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--letc-header-bg);
+  border-bottom: 1px solid var(--letc-header-border);
   border-radius: 8px 8px 0 0;
   cursor: move;
   display: flex;
@@ -36,7 +122,7 @@
 .letc-title {
   font-weight: 600;
   font-size: 14px;
-  color: #333;
+  color: var(--letc-text);
 }
 
 .letc-controls {
@@ -50,11 +136,11 @@
   cursor: pointer;
   font-size: 16px;
   padding: 0;
-  color: #666;
+  color: var(--letc-icon);
 }
 
 .letc-icon-btn:hover {
-  color: #333;
+  color: var(--letc-icon-hover);
 }
 
 .letc-content {
@@ -70,11 +156,12 @@
   margin-bottom: 10px;
   overflow-y: auto;
   max-height: 200px;
-  border: 1px solid #eee;
+  border: 1px solid var(--letc-history-border);
   padding: 8px;
   border-radius: 4px;
-  background-color: #fafafa;
+  background-color: var(--letc-history-bg);
   font-size: 13px;
+  color: var(--letc-text);
 }
 
 .letc-message {
@@ -86,16 +173,16 @@
 }
 
 .letc-message.user {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--letc-msg-user-bg);
+  color: var(--letc-msg-user-text);
   align-self: flex-end;
   margin-left: auto;
   white-space: pre-wrap;
 }
 
 .letc-message.assistant {
-  background-color: #e9ecef;
-  color: #333;
+  background-color: var(--letc-msg-assistant-bg);
+  color: var(--letc-msg-assistant-text);
   align-self: flex-start;
 }
 
@@ -109,11 +196,17 @@ textarea.letc-input {
   width: 100%;
   height: 80px;
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--letc-input-border);
   border-radius: 4px;
   resize: vertical;
   font-family: inherit;
   box-sizing: border-box;
+  background-color: var(--letc-input-bg);
+  color: var(--letc-input-text);
+}
+
+textarea.letc-input::placeholder {
+  color: var(--letc-input-placeholder);
 }
 
 .letc-actions {
@@ -164,13 +257,13 @@ button.letc-btn-secondary:hover {
 .letc-status {
   margin-top: 8px;
   font-size: 12px;
-  color: #666;
+  color: var(--letc-status);
   text-align: center;
   min-height: 18px;
 }
 
 .letc-status.error {
-  color: #dc3545;
+  color: var(--letc-status-error);
 }
 
 /* Mobile adjustments */
@@ -181,4 +274,20 @@ button.letc-btn-secondary:hover {
     right: auto;
     bottom: 10px;
   }
+}
+
+/* Scrollbar Styling */
+#leetcode-english-to-code-panel ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+#leetcode-english-to-code-panel ::-webkit-scrollbar-track {
+  background: var(--letc-scrollbar-track);
+}
+#leetcode-english-to-code-panel ::-webkit-scrollbar-thumb {
+  background: var(--letc-scrollbar-thumb);
+  border-radius: 4px;
+}
+#leetcode-english-to-code-panel ::-webkit-scrollbar-thumb:hover {
+  background: var(--letc-scrollbar-thumb-hover);
 }

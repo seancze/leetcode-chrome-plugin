@@ -47,6 +47,51 @@
     .error {
       color: red;
     }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+      }
+      input[type="password"] {
+        background-color: #2d2d2d;
+        color: #e0e0e0;
+        border-color: #444;
+      }
+      input[type="password"]::placeholder {
+        color: #aaa;
+      }
+      h2 {
+        color: #ffffff;
+      }
+      button {
+        background-color: #0069d9;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #status {
+        color: #4caf50;
+      }
+      .error {
+        color: #ff6b6b;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e1e1e; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #555; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #888; 
+      }
+    }
   </style>
 </head>
 <body>
