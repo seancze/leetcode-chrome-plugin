@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
+import { buildCodeMessages } from "../../src/ai/utils.js";
 
 export const config = {
   runtime: "edge",
@@ -57,44 +58,11 @@ export default async function handler(req: Request) {
 
     const openai = createOpenAI({ apiKey });
 
-    const systemPrompt = `You are a strict code transcriber. Your task is to transform the user input into Python 3 code without adding any logic, assumptions, or problem solving beyond what the user explicitly states.
-
-Rules you must follow at all times:
-
-1. Treat the user prompt as the only source of truth.
-2. Do not infer intent, fill in gaps, or complete unfinished tasks.
-3. If the user asks for a change, apply only that change and nothing else.
-4. NEVER solve the problem for the user.
-5. If no executable action is requested, make no functional changes.
-6. Never use prior knowledge of coding challenges, common solutions, or expected outputs.
-7. Preserve the exact function signature and class structure provided.
-8. Output the full updated code, even if the change is minimal.
-9. Do not optimize, refactor, or clean up code unless instructed.
-10. Add comments only when required to clarify complex logic that the user explicitly requested.
-11. Output only valid Python 3 code and nothing else.
-
-Violation of any rule above is an error.`;
-
-    const messages: any[] = [{ role: "system", content: systemPrompt }];
-
-    if (chatHistory && chatHistory.length > 0) {
-      chatHistory.forEach((msg: any) => {
-        messages.push({ role: msg.role, content: msg.content });
-      });
-    }
-
-    if (currentCode) {
-      messages.push({
-        role: "system",
-        content: `Current Code in Editor:\n\`\`\`python\n${currentCode}\n\`\`\``,
-      });
-    }
-
-    messages.push({ role: "user", content: userPrompt });
+    const messages = buildCodeMessages(chatHistory, currentCode, userPrompt);
 
     const result = streamText({
       model: openai(model),
-      messages: messages,
+      messages: messages as any,
       providerOptions: {
         openai: {
           reasoningEffort: "low",

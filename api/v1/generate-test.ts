@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
+import { buildTestMessages } from "../../src/ai/utils.js";
 
 export const config = {
   runtime: "edge",
@@ -57,33 +58,15 @@ export default async function handler(req: Request) {
 
     const openai = createOpenAI({ apiKey });
 
-    const systemPrompt = `You are an expert software tester. Your task is to evaluate the user's code and generate a new test case if necessary.
-
-Rules:
-1. Analyse the problem description, current code, and existing test cases.
-2. Determine if the user's code is correct.
-3. If the user's code is correct, set "isUserCorrect" to true and "testCase" to null.
-4. If the user's code is incorrect, set "isUserCorrect" to false and generate a SINGLE new test case that causes the user's code to fail. Set "testCase" to this string.
-5. The "testCase" string must be formatted exactly as LeetCode expects (e.g. line separated values).
-6. Do not repeat existing test cases.
-
-Return the result as a JSON object with the following structure:
-{
-  "testCase": "string or null",
-  "isUserCorrect": boolean
-}`;
-
-    const messages: any[] = [
-      { role: "system", content: systemPrompt },
-      {
-        role: "user",
-        content: `Problem Title: ${problemDetails.title}\nProblem Description:\n${problemDetails.description}\n\nCurrent Code:\n\`\`\`python\n${currentCode}\n\`\`\`\n\nCurrent Test Cases:\n${currentTestCases}\n\nEvaluate and generate test case if needed.`,
-      },
-    ];
+    const messages = buildTestMessages(
+      problemDetails,
+      currentCode,
+      currentTestCases
+    );
 
     const result = streamText({
       model: openai(model),
-      messages: messages,
+      messages: messages as any,
       providerOptions: {
         openai: {
           reasoningEffort: "low",

@@ -1,4 +1,4 @@
-import { generateCode, generateTest } from "./llm.js";
+import { generateCode, generateTest } from "./ai/main.js";
 
 chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
   if (port.name === "generateCode") {
