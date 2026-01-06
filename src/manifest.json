@@ -9,11 +9,8 @@
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
-  "permissions": ["storage", "activeTab", "scripting"],
-  "host_permissions": [
-    "https://leetcode.com/*",
-    "https://leetcode-chrome-extension.vercel.app/*"
-  ],
+  "permissions": ["storage"],
+  "host_permissions": ["https://leetcode-chrome-extension.vercel.app/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
