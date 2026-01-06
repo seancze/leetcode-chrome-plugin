@@ -5,7 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && cp -r src/ dist/src/ && rm -rf dist/src/*.ts",
+    "build": "tsc && cp -r src/ dist/src/ && find dist/src -type f -name \"*.ts\" -delete && rm -f dist/src/icons/300.png",
     "watch": "tsc -w"
   },
   "dependencies": {
