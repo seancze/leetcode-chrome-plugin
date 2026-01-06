@@ -1,4 +1,4 @@
-import { generateTest } from "../../src/llm";
+import { generateTest } from "../../src/ai/main";
 
 export default class TestGeneratorProvider {
   providerId: string;
@@ -16,10 +16,11 @@ export default class TestGeneratorProvider {
   async callApi(prompt: string, context: any) {
     const { currentCode, problemDetails, currentTestCases } = context.vars;
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return { error: "OPENAI_API_KEY not set" };
-    }
+    // if no api key is set
+    // generateTest will invoke the Vercel API endpoint
+    const apiKey = this.config.use_vercel_api
+      ? ""
+      : process.env.OPENAI_API_KEY!;
 
     try {
       // problemDetails comes as a string from the yaml vars, so we parse it

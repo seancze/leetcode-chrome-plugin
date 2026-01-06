@@ -3,9 +3,15 @@ prompts:
 
 providers:
   - id: file://provider.ts
-    label: "gpt-5.1-codex-mini"
+    label: "gpt-5.1-codex-mini with Vercel API"
     config:
       model: gpt-5.1-codex-mini
+      use_vercel_api: true
+  - id: file://provider.ts
+    label: "gpt-5.1-codex-mini without Vercel API"
+    config:
+      model: gpt-5.1-codex-mini
+      use_vercel_api: false
 
 tests:
   - description: "1 - Correct Code"

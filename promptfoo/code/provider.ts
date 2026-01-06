@@ -1,4 +1,4 @@
-import { generateCode } from "../../src/llm";
+import { generateCode } from "../../src/ai/main";
 
 export default class LeetCodeProvider {
   providerId: string;
